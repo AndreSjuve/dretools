@@ -1,13 +1,13 @@
 Package: dretools
-Title: What the Package Does (One Line, Title Case)
+Title: Suite of handy functions
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "André",
+           family = "Wattø Sjuve",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "andre.sjuve@gmail.com")
+Description: dretools is a small package of handy functions I have created 
+    and gathered over the last years. 
 License: MIT + file LICENSE
 Suggests: 
     testthat (>= 3.0.0)
@@ -18,3 +18,17 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 URL: https://github.com/AndreSjuve/dretools
 BugReports: https://github.com/AndreSjuve/dretools/issues
+Imports: 
+    extrafont,
+    dplyr,
+    magrittr,
+    ggplot2,
+    lubridate,
+    purrr,
+    stringr,
+    zoo,
+    fs,
+    fst,
+    readxl,
+    tibble,
+    rlang

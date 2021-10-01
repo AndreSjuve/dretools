@@ -1,4 +1,4 @@
-library(testthat)
-library(dretools)
-
-test_check("dretools")
+#library(testthat)
+#library(dretools)
+#
+#test_check("dretools")
