@@ -29,12 +29,12 @@ find_closest_date <- function(target_dates, date_column) {
   # Ensure inputs are in Date format using lubridate's parse_date_time
   target_dates <-
     suppressWarnings(
-    lubridate::parse_date_time(target_dates,
-                               orders = c("ymd", "mdy", "dmy")))
+      lubridate::parse_date_time(target_dates,
+                                 orders = c("ymd", "mdy", "dmy")))
   date_column <-
     suppressWarnings(
-    lubridate::parse_date_time(date_column,
-                               orders = c("ymd", "mdy", "dmy")))
+      lubridate::parse_date_time(date_column,
+                                 orders = c("ymd", "mdy", "dmy")))
 
   # Convert to Date class to remove time information
   target_dates <- as.Date(target_dates)
@@ -48,6 +48,8 @@ find_closest_date <- function(target_dates, date_column) {
     cli::cli_abort("Some dates in the date column are not valid dates.")
   }
 
+  # Ensure date_column is sorted in ascending order, preserving NAs
+  date_column <- base::sort(date_column, na.last = TRUE)
 
   # Find the closest index using findInterval
   closest_index <- findInterval(target_dates, date_column)
@@ -91,13 +93,13 @@ find_closest_date <- function(target_dates, date_column) {
   # Calculate differences for both the closest previous and next dates
   lower_diff <- abs(as.numeric(target_dates - date_column[closest_index]))
   upper_diff <- dplyr::if_else(closest_index < length(date_column),
-                       abs(as.numeric(target_dates - date_column[closest_index + 1])),
-                       Inf)
+                               abs(as.numeric(target_dates - date_column[closest_index + 1])),
+                               Inf)
 
   # Choose the closest date, comparing the lower and upper differences
   closest_dates <- dplyr::if_else(upper_diff < lower_diff,
-                           date_column[closest_index + 1],
-                           date_column[closest_index])
+                                  date_column[closest_index + 1],
+                                  date_column[closest_index])
 
   return(closest_dates)
 }
