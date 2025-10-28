@@ -11,5 +11,4 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 status](https://www.r-pkg.org/badges/version/dretools)](https://CRAN.R-project.org/package=dretools)
 <!-- badges: end -->
 
-A set of small functions I find helpful in everyday work. Use at your
-own risk.
+A set of small functions I find helpful in everyday work.
