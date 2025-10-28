@@ -1,4 +1,3 @@
-
 # add_stars() ------------------------------------------------------------------
 
 #' Add stars to statistical estimate
@@ -17,26 +16,30 @@
 #' @return Character, vector with estimates and stars
 #' @export
 
-
 add_stars <- function(estimates, p_vals) {
-
   if (length(estimates) != length(p_vals)) {
     stop("estimates and p_vals of different lengths")
   }
 
-  tibble::tibble(estimates = estimates,
-                 p_vals = p_vals) %>%
-    dplyr::mutate(est_stars = dplyr::case_when(
-      p_vals <= 0.01 & !is.na(estimates) ~ paste0("$", estimates, "^{***}$"),
-      p_vals <= 0.05 & !is.na(estimates) ~ paste0("$", estimates, "^{**}$"),
-      p_vals <= 0.1  & !is.na(estimates) ~ paste0("$", estimates, "^{*}$"),
-      p_vals >  0.1  & !is.na(estimates) ~ paste0("$", estimates, "$"),
-      TRUE ~ NA_character_,
-    )) %>%
+  if (is.character(p_vals)) {
+    cli::cli_inform(
+      "{.arg p_vals} is of type character, converting to numeric before assigning stars."
+    )
+    p_vals <- as.numeric(p_vals)
+  }
+
+  tibble::tibble(estimates = estimates, p_vals = p_vals) %>%
+    dplyr::mutate(
+      est_stars = dplyr::case_when(
+        p_vals <= 0.01 & !is.na(estimates) ~ paste0("$", estimates, "^{***}$"),
+        p_vals <= 0.05 & !is.na(estimates) ~ paste0("$", estimates, "^{**}$"),
+        p_vals <= 0.1 & !is.na(estimates) ~ paste0("$", estimates, "^{*}$"),
+        p_vals > 0.1 & !is.na(estimates) ~ paste0("$", estimates, "$"),
+        TRUE ~ NA_character_,
+      )
+    ) %>%
     dplyr::select(.data$est_stars) %>%
     dplyr::pull()
-
-
 }
 
 
@@ -57,30 +60,24 @@ add_stars <- function(estimates, p_vals) {
 #' @export
 
 alligator_remover <- function(col_names = NULL) {
-
   if (is.null(col_names)) {
-
     warning("no string passed, returning NA")
 
     return(NA_character_)
-
   }
 
   if (class(col_names) != "character") {
-
     col_names <-
       col_names %>%
       as.character()
 
     message("col_names class converted to character")
-
   }
 
   col_names %>%
     gsub(pattern = "<", replacement = "", x = .data) %>%
     gsub(pattern = ">", replacement = "", x = .data) %>%
     gsub(pattern = " ", replacement = "_")
-
 }
 
 # camel_to_snake() -------------------------------------------------------------
@@ -110,7 +107,7 @@ alligator_remover <- function(col_names = NULL) {
 camel_to_snake <- function(x) {
   x %>%
     strsplit("(?<=[a-z])(?=[A-Z])", perl = TRUE) %>%
-    purrr::map(~paste0(tolower(.x), collapse = "_")) %>%
+    purrr::map(~ paste0(tolower(.x), collapse = "_")) %>%
     unlist()
 }
 
@@ -157,7 +154,7 @@ standardise_character <- function(x) {
 #' @export
 
 str_remove_after <- function(string, sep) {
-  stringr::str_squish(purrr::map_chr(stringr::str_split(string, sep), ~.x[1]))
+  stringr::str_squish(purrr::map_chr(stringr::str_split(string, sep), ~ .x[1]))
 }
 
 
@@ -199,11 +196,9 @@ str_remove_after <- function(string, sep) {
 #' }
 
 str_remove_decimals <- function(string, pattern = NULL, n_digits = 2) {
-
   n_digits <- as.character(n_digits)
 
   if (is.null(pattern)) {
-
     pattern <-
       "($?-$?)?([0-9]{1,},)*\\d+(\\.\\d+)?"
 
@@ -214,43 +209,42 @@ str_remove_decimals <- function(string, pattern = NULL, n_digits = 2) {
     #  paste0("($?-$?)?([0-9]{1,},)*[0-9]{", n_digits, ",}(?=\\.)")
   }
 
-  purrr::map_chr(string, ~{
-
-    if (stringr::str_detect(.x, pattern, negate = T)) {
-      return(.x)
-    } else {
-
-      non_numeric_start <-
-        stringr::str_extract(.x, "^\\D+")
-
-      if (!is.na(non_numeric_start) & non_numeric_start == "-") {
-        non_numeric_start <- ""
-      }
-
-      non_numeric_end <-
-        stringr::str_extract(.x, "\\D+$")
-
-      number <-
-        as.numeric(stringr::str_remove_all(stringr::str_extract(.x, pattern), ","))
-
-      if (nchar(trunc(abs(number))) >= n_digits) {
-        number <- format(round(number), big.mark = ",")
+  purrr::map_chr(
+    string,
+    ~ {
+      if (stringr::str_detect(.x, pattern, negate = T)) {
+        return(.x)
       } else {
-        number <- number
+        non_numeric_start <-
+          stringr::str_extract(.x, "^\\D+")
+
+        if (!is.na(non_numeric_start) & non_numeric_start == "-") {
+          non_numeric_start <- ""
+        }
+
+        non_numeric_end <-
+          stringr::str_extract(.x, "\\D+$")
+
+        number <-
+          as.numeric(stringr::str_remove_all(
+            stringr::str_extract(.x, pattern),
+            ","
+          ))
+
+        if (nchar(trunc(abs(number))) >= n_digits) {
+          number <- format(round(number), big.mark = ",")
+        } else {
+          number <- number
+        }
+
+        paste0(
+          coalesce(non_numeric_start, ""),
+          number,
+          coalesce(non_numeric_end, "")
+        )
       }
-
-      paste0(
-        coalesce(non_numeric_start, ""),
-        number,
-        coalesce(non_numeric_end, "")
-      )
-
-
     }
-
-
-  })
-
+  )
 }
 
 
@@ -282,7 +276,6 @@ str_remove_decimals <- function(string, pattern = NULL, n_digits = 2) {
 #  })
 #
 #}
-
 
 # str_remove_decimals_all() ----------------------------------------------------
 
@@ -323,73 +316,33 @@ str_remove_decimals <- function(string, pattern = NULL, n_digits = 2) {
 #' str_remove_decimals_all("Hello; 10.000", "1.000 is low")
 #' }
 
-
 str_remove_decimals_all <-
   function(string, pattern = NULL, split_pattern = NULL, n_digits) {
-
     if (is.null(split_pattern)) {
       split_pattern <- "&"
     }
 
-    purrr::map_chr(string, ~{
+    purrr::map_chr(
+      string,
+      ~ {
+        if (stringr::str_detect(.x, split_pattern)) {
+          out <-
+            stringr::str_split(.x, split_pattern) %>%
+            unlist() %>%
+            stringr::str_squish() %>%
+            str_remove_decimals(., pattern = pattern, n_digits = n_digits) %>%
+            paste(., collapse = " & ")
 
-      if (stringr::str_detect(.x, split_pattern)) {
+          if (stringr::str_detect(out, "\\\\s*$", negate = T)) {
+            out <- paste(out, "\\\\", collapse = " ")
+          }
+        } else {
+          out <- .x
 
-        out <-
-          stringr::str_split(.x , split_pattern) %>%
-          unlist() %>%
-          stringr::str_squish() %>%
-          str_remove_decimals(., pattern = pattern,
-                                       n_digits = n_digits) %>%
-          paste(., collapse = " & ")
-
-        if (stringr::str_detect(out, "\\\\s*$", negate = T)) {
-          out <- paste(out, "\\\\", collapse = " ")
+          #out <- str_remove_decimals(.x, pattern = pattern, n_digits = n_digits)
         }
 
-      } else {
-
-        out <- .x
-
-        #out <- str_remove_decimals(.x, pattern = pattern, n_digits = n_digits)
-
+        out
       }
-
-      out
-
-    })
-
+    )
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
